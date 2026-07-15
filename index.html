@@ -3,46 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的DeepSeek助手</title>
+    <title>DeepSeek 智能助手</title>
     <style>
-        body { font-family: -apple-system, sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; background: #f7f7f8; }
-        #chatbox { background: white; border-radius: 12px; padding: 15px; height: 60vh; overflow-y: auto; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .msg { margin-bottom: 12px; padding: 8px 12px; border-radius: 18px; max-width: 80%; word-wrap: break-word; }
-        .user { background: #007aff; color: white; margin-left: auto; }
-        .ai { background: #e9e9eb; color: black; }
-        #input-area { display: flex; gap: 10px; }
-        #input-box { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 25px; outline: none; font-size: 16px; }
-        #send-btn { padding: 12px 20px; background: #007aff; color: white; border: none; border-radius: 25px; font-size: 16px; cursor: pointer; }
-        #send-btn:disabled { background: #aaa; }
-        .loading { text-align: center; color: #888; font-size: 14px; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 15px;
+            background: #f7f7f8;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #chatbox {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .msg {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+            white-space: pre-wrap; /* 保留换行 */
+        }
+        .user {
+            background: #007aff;
+            color: white;
+            margin-left: auto;
+        }
+        .ai {
+            background: #e9e9eb;
+            color: black;
+        }
+        #input-area {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            padding-bottom: 5px;
+        }
+        #input-box {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;      /* 允许手动拉高 */
+            min-height: 44px;
+            max-height: 150px;
+            line-height: 1.4;
+        }
+        #send-btn {
+            padding: 12px 20px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            height: 44px;
+            flex-shrink: 0;
+        }
+        #send-btn:disabled {
+            background: #aaa;
+        }
+        .loading {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+        }
+        .clear-btn {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 15px;
+            font-size: 14px;
+            float: right;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
     </style>
 </head>
 <body>
 
-    <div id="chatbox"></div>
+    <div id="chatbox" class="clearfix">
+        <button class="clear-btn" id="clear-btn">清空记忆</button>
+        <!-- 聊天消息会动态插入到这里 -->
+    </div>
+
     <div id="input-area">
-        <input type="text" id="input-box" placeholder="输入你的问题...">
+        <textarea id="input-box" rows="1" placeholder="输入你的问题… (Enter换行，点击发送)"></textarea>
         <button id="send-btn">发送</button>
     </div>
 
     <script>
-
-        const API_KEY = 'sk-a5719b4bf58d48b481b4eed428c94800';
-
+        // ---------- 配置 ----------
+        const API_KEY = 'sk-a5719b4bf58d48b481b4eed428c94800';   // 请替换为真实密钥
+        // -------------------------
 
         const chatbox = document.getElementById('chatbox');
         const inputBox = document.getElementById('input-box');
         const sendBtn = document.getElementById('send-btn');
+        const clearBtn = document.getElementById('clear-btn');
 
-        function addMessage(content, sender) {
+        // ---------- 本地存储键名 ----------
+        const STORAGE_KEY = 'deepseek_chat_history';
+
+        // ---------- 加载本地历史 ----------
+        let conversationHistory = [];
+
+        function loadHistory() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    conversationHistory = JSON.parse(saved);
+                    // 重新渲染界面
+                    renderMessages();
+                } catch (e) {
+                    console.warn('解析存储失败，重置');
+                    conversationHistory = [];
+                }
+            }
+        }
+
+        // ---------- 保存到本地 ----------
+        function saveHistory() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(conversationHistory));
+        }
+
+        // ---------- 渲染所有消息 ----------
+        function renderMessages() {
+            // 保留清空按钮（第一个子元素）
+            const clearBtnEl = document.getElementById('clear-btn');
+            chatbox.innerHTML = '';
+            if (clearBtnEl) {
+                chatbox.appendChild(clearBtnEl);
+            } else {
+                // 重新创建（防止丢失）
+                const newBtn = document.createElement('button');
+                newBtn.className = 'clear-btn';
+                newBtn.id = 'clear-btn';
+                newBtn.textContent = '清空记忆';
+                chatbox.appendChild(newBtn);
+                newBtn.addEventListener('click', clearBtnClickHandler);
+            }
+            // 添加一条占位清除浮动
+            const clearDiv = document.createElement('div');
+            clearDiv.className = 'clearfix';
+            chatbox.appendChild(clearDiv);
+
+            // 遍历历史记录，显示所有消息（跳过system角色）
+            conversationHistory.forEach(msg => {
+                if (msg.role === 'user' || msg.role === 'assistant') {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `msg ${msg.role === 'user' ? 'user' : 'ai'}`;
+                    msgDiv.textContent = msg.content;
+                    chatbox.appendChild(msgDiv);
+                }
+            });
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        // ---------- 添加新消息到界面和记忆 ----------
+        function addMessage(content, role) {
+            // 存储到历史
+            conversationHistory.push({ role, content });
+            saveHistory(); // 立刻保存
+
+            // 显示在界面上
             const msgDiv = document.createElement('div');
-            msgDiv.className = `msg ${sender}`;
+            msgDiv.className = `msg ${role === 'user' ? 'user' : 'ai'}`;
             msgDiv.textContent = content;
             chatbox.appendChild(msgDiv);
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
+        // ---------- 调用API ----------
         async function callDeepSeek(userMessage) {
+            // 先将用户消息加入历史（已在addMessage里加入，但为了保持逻辑，这里不再重复）
+            // 注意：addMessage已经被外部调用，所以这里直接使用conversationHistory
             try {
                 const response = await fetch('https://api.deepseek.com/chat/completions', {
                     method: 'POST',
@@ -51,8 +204,8 @@
                         'Authorization': `Bearer ${API_KEY}`
                     },
                     body: JSON.stringify({
-                        model: 'deepseek-chat', // 或 deepseek-reasoner (R1)[reference:7]
-                        messages: [{ role: 'user', content: userMessage }],
+                        model: 'deepseek-chat',
+                        messages: conversationHistory, // 包含所有历史
                         stream: false
                     })
                 });
@@ -63,38 +216,103 @@
                 }
 
                 const data = await response.json();
-                return data.choices[0].message.content;
+                const reply = data.choices[0].message.content;
+                // 将AI回复加入历史并保存
+                conversationHistory.push({ role: 'assistant', content: reply });
+                saveHistory();
+                return reply;
             } catch (error) {
                 console.error('调用API时出错:', error);
                 return `抱歉，发生了一个错误：${error.message}`;
             }
         }
 
-        sendBtn.addEventListener('click', async () => {
+        // ---------- 发送逻辑 ----------
+        async function handleSend() {
             const message = inputBox.value.trim();
             if (!message) return;
 
-            addMessage(message, 'user');
+            // 清空输入框
             inputBox.value = '';
+            // 重置高度
+            inputBox.style.height = 'auto';
+
+            // 显示用户消息（并保存）
+            addMessage(message, 'user');
+
+            // 禁用发送按钮
             sendBtn.disabled = true;
 
-            // 添加一个临时的“AI正在思考...”消息
+            // 显示加载中
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'msg ai loading';
-            loadingDiv.textContent = '思考中...';
+            loadingDiv.textContent = '思考中…';
             chatbox.appendChild(loadingDiv);
             chatbox.scrollTop = chatbox.scrollHeight;
 
+            // 调用API（内部会保存AI回复）
             const reply = await callDeepSeek(message);
 
-            // 移除“思考中...”消息，添加真正的回复
+            // 移除加载提示
             chatbox.removeChild(loadingDiv);
-            addMessage(reply, 'ai');
+            // 显示AI回复（已经保存在历史中，直接渲染最后一条）
+            // 但我们手动再添加到界面（避免重复保存）
+            const aiMsgDiv = document.createElement('div');
+            aiMsgDiv.className = 'msg ai';
+            aiMsgDiv.textContent = reply;
+            chatbox.appendChild(aiMsgDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
+
             sendBtn.disabled = false;
+        }
+
+        // ---------- 清空记忆 ----------
+        function clearBtnClickHandler() {
+            if (confirm('确定要清空所有历史记录吗？')) {
+                conversationHistory = [];
+                localStorage.removeItem(STORAGE_KEY);
+                // 重新渲染界面（保留清空按钮）
+                renderMessages();
+                // 重新绑定清空按钮事件（因为renderMessages重新创建了按钮）
+                document.getElementById('clear-btn').addEventListener('click', clearBtnClickHandler);
+            }
+        }
+
+        // ---------- 事件绑定 ----------
+        // 发送按钮
+        sendBtn.addEventListener('click', handleSend);
+
+        // 键盘事件：Ctrl+Enter 或 Command+Enter 发送（同时保留换行）
+        inputBox.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                handleSend();
+            }
+            // 普通 Enter 换行，不做处理
         });
 
-        inputBox.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendBtn.click();
+        // 输入框自动调整高度（随内容增高）
+        inputBox.addEventListener('input', () => {
+            inputBox.style.height = 'auto';
+            inputBox.style.height = Math.min(inputBox.scrollHeight, 150) + 'px';
+        });
+
+        // 清空按钮事件
+        clearBtn.addEventListener('click', clearBtnClickHandler);
+
+        // ---------- 初始化 ----------
+        loadHistory();
+        // 如果历史为空，可以加一条欢迎语（可选）
+        if (conversationHistory.length === 0) {
+            // 可选添加系统提示，但这里不加，让用户自己开始
+        }
+        // 注意：若想在开始时加一条AI欢迎语，可以这样做：
+        // addMessage('你好！我是DeepSeek助手，请问有什么可以帮助你？', 'assistant');
+        // 但为了简洁，我们保持空白。
+
+        // 另外，为iOS优化：点击发送后收回键盘
+        inputBox.addEventListener('blur', () => {
+            // 可做其他处理
         });
     </script>
 </body>
