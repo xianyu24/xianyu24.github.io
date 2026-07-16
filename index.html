@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DeepSeek v0.2.0</title>
+    <title>DeepSeek 多会话助手</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -24,44 +24,51 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: 8px 4px;
             flex-wrap: wrap;
             gap: 6px;
-            background: rgba(245, 245, 247, 0.6);         /* 半透明背景 */
+            background: rgba(245, 245, 247, 0.6);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);          /* 毛玻璃核心 */
+            -webkit-backdrop-filter: blur(12px);
             position: sticky;
             top: 0;
             z-index: 10;
-            padding: 8px 4px;
             border-radius: 16px;
             margin-bottom: 4px;
         }
         .header-left {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             flex: 1;
             min-width: 0;
+            flex-wrap: nowrap;
         }
         .header-left select {
-            flex: 1;
-            min-width: 60px;
-            padding: 6px 10px;
+            padding: 6px 8px;
             border-radius: 20px;
             border: 1px solid rgba(0,0,0,0.1);
-            font-size: 14px;
+            font-size: 13px;
             background: rgba(255,255,255,0.8);
             outline: none;
-            max-width: 180px;
+            max-width: 130px;
+            flex-shrink: 1;
+        }
+        #convSelector {
+            flex: 1;
+            min-width: 60px;
+            max-width: 160px;
+        }
+        #modelSelect {
+            max-width: 110px;
         }
         .icon-btn {
             background: rgba(255,255,255,0.6);
             border: none;
             border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            font-size: 18px;
+            width: 34px;
+            height: 34px;
+            font-size: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -74,7 +81,7 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         .token-info {
             font-size: 12px;
@@ -99,7 +106,7 @@
             display: flex;
             max-width: 85%;
             animation: slideIn 0.35s ease-out forwards;
-            opacity: 0; /* 初始透明，动画结束时可见 */
+            opacity: 0;
             transform: translateY(12px);
         }
         @keyframes slideIn {
@@ -155,7 +162,6 @@
             align-items: flex-end;
             padding: 10px 0;
             background: #f5f5f7;
-            /* 增加一个过渡，但键盘抬升我们用 JS 控制滚动 */
         }
         #input-box {
             flex: 1;
@@ -202,6 +208,14 @@
 <div class="header">
     <div class="header-left">
         <button class="icon-btn" id="newConvBtn" title="新建对话">➕</button>
+        <!-- 模型切换下拉菜单 -->
+        <select id="modelSelect">
+            <option value="deepseek-v4-pro">v4-Pro</option>
+            <option value="deepseek-v4-flash" selected>v4-Flash</option>
+            <option value="deepseek-chat">chat(旧)</option>
+            <option value="deepseek-reasoner">R1(旧)</option>
+        </select>
+        <!-- 对话切换下拉菜单 -->
         <select id="convSelector"></select>
     </div>
     <div class="header-right">
@@ -229,6 +243,7 @@
     const inputBox = document.getElementById('input-box');
     const sendBtn = document.getElementById('send-btn');
     const convSelector = document.getElementById('convSelector');
+    const modelSelect = document.getElementById('modelSelect');
     const newConvBtn = document.getElementById('newConvBtn');
     const deleteConvBtn = document.getElementById('deleteConvBtn');
     const tokenDisplay = document.getElementById('tokenDisplay');
@@ -236,12 +251,15 @@
     // ---------- 数据结构 ----------
     let conversations = {};
     let currentId = null;
+    let currentModel = 'deepseek-v4-flash';  // 当前选中的模型
 
     const CONV_KEY = 'deepseek_conversations';
     const CURRENT_KEY = 'deepseek_current_conv';
+    const MODEL_KEY = 'deepseek_selected_model';
 
     // ---------- 数据持久化 ----------
     function loadData() {
+        // 加载对话
         const saved = localStorage.getItem(CONV_KEY);
         if (saved) {
             try { conversations = JSON.parse(saved); } catch(e) { conversations = {}; }
@@ -254,12 +272,24 @@
             if (ids.length > 0) currentId = ids[0];
             else createNewConversation();
         }
+
+        // 加载模型选择
+        const savedModel = localStorage.getItem(MODEL_KEY);
+        if (savedModel && modelSelect.querySelector(`option[value="${savedModel}"]`)) {
+            currentModel = savedModel;
+            modelSelect.value = savedModel;
+        } else {
+            // 默认 flash
+            currentModel = 'deepseek-v4-flash';
+            modelSelect.value = 'deepseek-v4-flash';
+        }
     }
 
     function saveData() {
         localStorage.setItem(CONV_KEY, JSON.stringify(conversations));
         if (currentId) localStorage.setItem(CURRENT_KEY, currentId);
         else localStorage.removeItem(CURRENT_KEY);
+        localStorage.setItem(MODEL_KEY, currentModel);
     }
 
     // ---------- 对话管理 ----------
@@ -275,7 +305,6 @@
         saveData();
         refreshUI();
         inputBox.focus();
-        // 键盘抬起时自动滚动
         setTimeout(() => inputBox.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
     }
 
@@ -375,7 +404,6 @@
         return new Promise((resolve) => {
             let index = 0;
             const total = content.length;
-            // 先清空内容，用纯文本逐步添加
             bubble.textContent = '';
             const interval = setInterval(() => {
                 if (index < total) {
@@ -384,11 +412,10 @@
                     chatbox.scrollTop = chatbox.scrollHeight;
                 } else {
                     clearInterval(interval);
-                    // 打字完成后，渲染为 Markdown
                     bubble.innerHTML = renderMarkdown(content);
                     resolve();
                 }
-            }, 20); // 20ms 一个字，可自行调节速度
+            }, 20);
         });
     }
 
@@ -403,7 +430,6 @@
             }
         }
 
-        // 移除空状态
         const empty = chatbox.querySelector('.empty-state');
         if (empty) empty.remove();
 
@@ -413,14 +439,11 @@
         bubble.className = 'bubble';
 
         if (typing && role === 'assistant') {
-            // 打字机模式：先插入空气泡，然后逐步填充
             wrapper.appendChild(bubble);
             chatbox.appendChild(wrapper);
             chatbox.scrollTop = chatbox.scrollHeight;
-            // 开始打字
             return typeMessage(content, bubble);
         } else {
-            // 普通模式（历史加载或用户消息）：直接渲染
             bubble.innerHTML = renderMarkdown(content);
             wrapper.appendChild(bubble);
             chatbox.appendChild(wrapper);
@@ -468,7 +491,7 @@
                     'Authorization': `Bearer ${API_KEY}`
                 },
                 body: JSON.stringify({
-                    model: 'deepseek-v4-flash',
+                    model: currentModel,   // 使用当前选中的模型
                     messages: messages,
                     stream: false
                 })
@@ -482,7 +505,6 @@
             if (data.usage && data.usage.prompt_tokens !== undefined) {
                 setCurrentTokens(data.usage.prompt_tokens);
             }
-            // 注意：这里我们不再立即保存AI回复到历史，因为打字机完成后会保存
             return reply;
         } catch (error) {
             console.error('调用API时出错:', error);
@@ -499,10 +521,8 @@
         inputBox.style.height = 'auto';
         sendBtn.disabled = true;
 
-        // 显示用户消息（直接渲染，无打字效果）
         await appendMessageToDOM(message, 'user', true, { typing: false });
 
-        // 加载中
         const loadingWrapper = document.createElement('div');
         loadingWrapper.className = 'message-wrapper ai loading';
         const bubble = document.createElement('div');
@@ -512,28 +532,22 @@
         chatbox.appendChild(loadingWrapper);
         chatbox.scrollTop = chatbox.scrollHeight;
 
-        // 获取回复
         const reply = await callDeepSeek(message);
 
-        // 移除加载提示
         chatbox.removeChild(loadingWrapper);
 
-        // 显示AI回复，带打字机效果（并保存到历史）
         await appendMessageToDOM(reply, 'assistant', true, { typing: true });
 
-        // 启用发送按钮
         sendBtn.disabled = false;
     }
 
-    // ---------- 输入区抬升（键盘遮挡处理） ----------
+    // ---------- 输入区抬升 ----------
     inputBox.addEventListener('focus', function() {
-        // 延迟等待键盘弹出，然后滚动到输入框
         setTimeout(() => {
             this.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 300);
     });
 
-    // 当输入框内容变化时，自动调整高度
     inputBox.addEventListener('input', () => {
         inputBox.style.height = 'auto';
         inputBox.style.height = Math.min(inputBox.scrollHeight, 150) + 'px';
@@ -554,6 +568,13 @@
         if (newId && newId !== currentId) {
             switchConversation(newId);
         }
+    });
+
+    // 模型切换事件
+    modelSelect.addEventListener('change', (e) => {
+        currentModel = e.target.value;
+        localStorage.setItem(MODEL_KEY, currentModel);
+        // 不刷新界面，只保存，后续请求使用新模型
     });
 
     newConvBtn.addEventListener('click', () => {
