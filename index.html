@@ -3,12 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DeepSeek v0.3.0</title>
+    <title>DeepSeek v0.3.1</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        *{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;max-width:700px;margin:0 auto;padding:10px 15px;background:#f5f5f7;height:100vh;display:flex;flex-direction:column}.header{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;flex-wrap:wrap;gap:6px;background:rgba(245,245,247,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:sticky;top:0;z-index:10;border-radius:16px;margin-bottom:4px}.header-left{display:flex;align-items:center;gap:6px;flex:1;min-width:0;flex-wrap:nowrap}.header-left select{padding:6px 8px;border-radius:20px;border:1px solid rgba(0,0,0,0.1);font-size:13px;background:rgba(255,255,255,0.8);outline:none;max-width:130px;flex-shrink:1;transition:box-shadow .2s,border-color .2s}.header-left select:focus{box-shadow:0 0 0 3px rgba(0,122,255,0.25);border-color:#007aff}#convSelector{flex:1;min-width:60px;max-width:160px}#modelSelect{max-width:110px}.icon-btn{background:rgba(255,255,255,0.6);border:none;border-radius:50%;width:34px;height:34px;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .15s,background .2s;-webkit-tap-highlight-color:transparent}.icon-btn:active{transform:scale(.9);background:rgba(0,0,0,0.1)}.icon-btn.danger:active{background:#ff3b30;color:#fff}.header-right{display:flex;align-items:center;gap:6px}.token-info{font-size:12px;color:#555;background:rgba(255,255,255,0.6);padding:4px 10px;border-radius:20px;white-space:nowrap}#chatbox{flex:1;background:transparent;padding:10px 0 20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}.message-wrapper{display:flex;flex-direction:column;max-width:85%;flex-shrink:0;animation:slideIn .4s cubic-bezier(.22,1,.36,1) forwards;opacity:0;transform:translateY(10px)}@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.message-wrapper.user{align-self:flex-end}.message-wrapper.ai{align-self:flex-start}.bubble-wrapper{display:flex;align-items:flex-end;gap:6px;position:relative}.bubble{padding:10px 14px;border-radius:20px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.05);word-break:break-word;overflow-wrap:break-word;white-space:pre-wrap;line-height:1.5;font-size:15px;min-width:40px;max-width:100%;position:relative;overflow:visible}.message-wrapper.user .bubble{background:#007aff;color:#fff;border-bottom-right-radius:4px}.message-wrapper.ai .bubble{background:#fff;color:#1c1c1e;border-bottom-left-radius:4px}.bubble p{margin:0 0 8px 0}.bubble p:last-child{margin-bottom:0}.bubble code{background:rgba(0,0,0,0.08);padding:2px 6px;border-radius:4px;font-size:.9em}.bubble pre{background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:8px;overflow-x:auto;overflow-y:auto;max-height:400px;margin:8px 0;font-size:13px}.bubble pre code{background:transparent;padding:0;font-size:inherit}.message-wrapper.user .bubble code{background:rgba(255,255,255,0.2)}.msg-toolbar{display:flex;align-items:center;gap:4px;margin-top:4px;font-size:13px;color:#888;justify-content:flex-end;opacity:.6;transition:opacity .2s}.message-wrapper:hover .msg-toolbar{opacity:1}.msg-toolbar button{background:transparent;border:none;padding:2px 6px;cursor:pointer;font-size:14px;color:#555;border-radius:4px;transition:background .2s}.msg-toolbar button:active{background:rgba(0,0,0,0.05)}.msg-toolbar .version-indicator{font-size:12px;min-width:30px;text-align:center;user-select:none}.msg-toolbar .edit-btn{color:#007aff}.msg-toolbar .edit-btn:active{background:rgba(0,122,255,0.1)}.bubble.edit-mode{padding:6px;background:#fff!important;border:2px solid #007aff}.bubble.edit-mode textarea{width:100%;border:none;outline:none;font-size:15px;font-family:inherit;resize:vertical;min-height:60px;padding:4px;background:transparent;overflow-wrap:break-word;word-break:break-word;white-space:pre-wrap}.bubble.edit-mode .edit-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}.bubble.edit-mode .edit-actions button{padding:4px 12px;border:none;border-radius:16px;font-size:14px;cursor:pointer}.bubble.edit-mode .edit-actions .confirm{background:#007aff;color:#fff}.bubble.edit-mode .edit-actions .cancel{background:#e9e9eb;color:#333}#input-area{display:flex;gap:10px;align-items:flex-end;padding:10px 0;background:#f5f5f7}#input-box{flex:1;padding:12px 16px;border:1px solid #ddd;border-radius:25px;outline:none;font-size:16px;font-family:inherit;resize:none;min-height:44px;max-height:150px;line-height:1.4;background:#fff;transition:box-shadow .25s,border-color .25s;overflow-wrap:break-word;word-break:break-word;white-space:pre-wrap}#input-box:focus{border-color:#007aff;box-shadow:0 0 0 4px rgba(0,122,255,0.2)}#send-btn{padding:12px 24px;background:#007aff;color:#fff;border:none;border-radius:25px;font-size:16px;cursor:pointer;height:44px;flex-shrink:0;font-weight:500;transition:transform .15s,background .2s;-webkit-tap-highlight-color:transparent}#send-btn:active:not(:disabled){transform:scale(.95)}#send-btn:disabled{background:#aaa;cursor:not-allowed;transform:none!important}.loading .bubble{background:#e9e9eb!important;color:#666!important;font-style:italic}.empty-state{text-align:center;color:#999;padding:40px 20px;font-size:16px}.system-message{text-align:center;color:#888;font-size:13px;padding:4px 0;font-style:italic;animation:slideIn .3s ease-out forwards;opacity:0;transform:translateY(6px)}
+        *{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;max-width:700px;margin:0 auto;padding:10px 15px;background:#f5f5f7;height:100vh;display:flex;flex-direction:column}.header{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;flex-wrap:wrap;gap:6px;background:rgba(245,245,247,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:sticky;top:0;z-index:10;border-radius:16px;margin-bottom:4px}.header-left{display:flex;align-items:center;gap:6px;flex:1;min-width:0;flex-wrap:nowrap}.header-left select{padding:6px 8px;border-radius:20px;border:1px solid rgba(0,0,0,0.1);font-size:13px;background:rgba(255,255,255,0.8);outline:none;max-width:130px;flex-shrink:1;transition:box-shadow .2s,border-color .2s}.header-left select:focus{box-shadow:0 0 0 3px rgba(0,122,255,0.25);border-color:#007aff}#convSelector{flex:1;min-width:60px;max-width:160px}#modelSelect{max-width:110px}.icon-btn{background:rgba(255,255,255,0.6);border:none;border-radius:50%;width:34px;height:34px;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .15s,background .2s;-webkit-tap-highlight-color:transparent}.icon-btn:active{transform:scale(.9);background:rgba(0,0,0,0.1)}.icon-btn.danger:active{background:#ff3b30;color:#fff}.header-right{display:flex;align-items:center;gap:6px}.token-info{font-size:12px;color:#555;background:rgba(255,255,255,0.6);padding:4px 10px;border-radius:20px;white-space:nowrap}#chatbox{flex:1;background:transparent;padding:10px 0 20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}.message-wrapper{display:flex;flex-direction:column;max-width:85%;flex-shrink:0;animation:slideIn .4s cubic-bezier(.22,1,.36,1) forwards;opacity:0;transform:translateY(10px)}@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.message-wrapper.user{align-self:flex-end}.message-wrapper.ai{align-self:flex-start}.bubble-wrapper{display:flex;align-items:flex-end;gap:6px;position:relative}.bubble{padding:10px 14px;border-radius:20px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.05);word-break:break-word;overflow-wrap:break-word;white-space:pre-wrap;line-height:1.5;font-size:15px;min-width:40px;max-width:100%;position:relative;overflow:visible}.message-wrapper.user .bubble{background:#007aff;color:#fff;border-bottom-right-radius:4px}.message-wrapper.ai .bubble{background:#fff;color:#1c1c1e;border-bottom-left-radius:4px}.bubble p{margin:0 0 8px 0}.bubble p:last-child{margin-bottom:0}.bubble code{background:rgba(0,0,0,0.08);padding:2px 6px;border-radius:4px;font-size:.9em}.bubble pre{background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:8px;overflow-x:auto;overflow-y:auto;max-height:400px;margin:8px 0;font-size:13px}.bubble pre code{background:transparent;padding:0;font-size:inherit}.message-wrapper.user .bubble code{background:rgba(255,255,255,0.2)}.msg-toolbar{display:flex;align-items:center;gap:4px;margin-top:4px;font-size:13px;color:#888;justify-content:flex-end;opacity:.6;transition:opacity .2s}.message-wrapper:hover .msg-toolbar{opacity:1}.msg-toolbar button{background:transparent;border:none;padding:2px 6px;cursor:pointer;font-size:14px;color:#555;border-radius:4px;transition:background .2s}.msg-toolbar button:active{background:rgba(0,0,0,0.05)}.msg-toolbar .version-indicator{font-size:12px;min-width:30px;text-align:center;user-select:none}.msg-toolbar .edit-btn{color:#007aff}.msg-toolbar .edit-btn:active{background:rgba(0,122,255,0.1)}.bubble.edit-mode{padding:6px;background:#fff!important;border:2px solid #007aff}.bubble.edit-mode textarea{width:100%;border:none;outline:none;font-size:15px;font-family:inherit;resize:vertical;min-height:60px;padding:4px;background:transparent;overflow-wrap:break-word;word-break:break-word;white-space:pre-wrap}.bubble.edit-mode .edit-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}.bubble.edit-mode .edit-actions button{padding:4px 12px;border:none;border-radius:16px;font-size:14px;cursor:pointer}.bubble.edit-mode .edit-actions .confirm{background:#007aff;color:#fff}.bubble.edit-mode .edit-actions .cancel{background:#e9e9eb;color:#333}#input-area{display:flex;gap:10px;align-items:flex-end;padding:10px 0;background:#f5f5f7;position:relative}#input-box{flex:1;padding:12px 16px;border:1px solid #ddd;border-radius:25px;outline:none;font-size:16px;font-family:inherit;resize:none;min-height:44px;max-height:150px;line-height:1.4;background:#fff;transition:box-shadow .25s,border-color .25s;overflow-wrap:break-word;word-break:break-word;white-space:pre-wrap}#input-box:focus{border-color:#007aff;box-shadow:0 0 0 4px rgba(0,122,255,0.2)}.input-btn-group{display:flex;gap:8px;align-items:center;flex-shrink:0}#send-btn{padding:12px 24px;background:#007aff;color:#fff;border:none;border-radius:25px;font-size:16px;cursor:pointer;height:44px;flex-shrink:0;font-weight:500;transition:transform .15s,background .2s;-webkit-tap-highlight-color:transparent}#send-btn:active:not(:disabled){transform:scale(.95)}#send-btn:disabled{background:#aaa;cursor:not-allowed;transform:none!important}.action-btn{background:rgba(255,255,255,0.8);border:1px solid #ddd;border-radius:25px;padding:0 16px;height:44px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .2s,border-color .2s;white-space:nowrap;flex-shrink:0}.action-btn:active{background:#e9e9eb}.action-btn .icon{font-size:18px}.action-btn .label{font-size:13px;color:#333}.action-btn.flash{animation:flashGreen .6s}@keyframes flashGreen{0%{background:#4cd964}100%{background:rgba(255,255,255,0.8)}}
+        /* 记忆输入浮层 */
+        .memory-float{display:none;position:absolute;bottom:60px;left:0;right:0;background:white;border-radius:20px;padding:12px 16px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:20;border:1px solid #ddd;backdrop-filter:blur(4px)}.memory-float textarea{width:100%;border:1px solid #ddd;border-radius:12px;padding:8px;font-size:15px;font-family:inherit;resize:vertical;min-height:50px;outline:none;transition:border-color .2s}.memory-float textarea:focus{border-color:#007aff}.memory-float .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}.memory-float .actions button{padding:6px 16px;border:none;border-radius:20px;font-size:14px;cursor:pointer}.memory-float .actions .add{background:#007aff;color:#fff}.memory-float .actions .close{background:#e9e9eb;color:#333}
+        .loading .bubble{background:#e9e9eb!important;color:#666!important;font-style:italic}.empty-state{text-align:center;color:#999;padding:40px 20px;font-size:16px}.system-message{text-align:center;color:#888;font-size:13px;padding:4px 0;font-style:italic;animation:slideIn .3s ease-out forwards;opacity:0;transform:translateY(6px)}
+        /* 设置模态框 */
+        .settings-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:999;justify-content:center;align-items:center}
+        .settings-panel{background:white;max-width:500px;width:90%;padding:20px;border-radius:20px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
+        .settings-panel h3{margin-top:0;margin-bottom:15px;font-weight:600}
+        .settings-panel label{display:block;font-size:14px;font-weight:500;margin:10px 0 4px}
+        .settings-panel textarea{width:100%;border:1px solid #ddd;border-radius:10px;padding:8px;font-family:inherit;font-size:14px;resize:vertical;min-height:60px}
+        .settings-panel .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:15px}
+        .settings-panel .actions button{padding:8px 20px;border:none;border-radius:20px;font-size:14px;cursor:pointer}
+        .settings-panel .actions .save{background:#007aff;color:white}
+        .settings-panel .actions .cancel{background:#e9e9eb;color:#333}
+        .settings-panel .char-counter{font-size:12px;color:#999;text-align:right}
+        .settings-panel .memory-hint{font-size:12px;color:#888;margin-top:4px}
     </style>
 </head>
 <body>
@@ -25,14 +40,44 @@
     </div>
     <div class="header-right">
         <span class="token-info" id="tokenDisplay">0 tokens</span>
+        <button class="icon-btn" id="settingsBtn" title="角色与记忆设置">⚙️</button>
         <button class="icon-btn danger" id="deleteConvBtn">🗑️</button>
     </div>
 </div>
 <div id="chatbox"><div class="empty-state">点击「➕」开始新对话</div></div>
 <div id="input-area">
     <textarea id="input-box" rows="1" placeholder="输入你的问题… (Enter换行)"></textarea>
-    <button id="send-btn">发送</button>
+    <div class="input-btn-group">
+        <button class="action-btn" id="memoryBtn"><span class="icon">📝</span><span class="label">记忆</span></button>
+        <button id="send-btn">发送</button>
+    </div>
+    <!-- 记忆输入浮层 -->
+    <div class="memory-float" id="memoryFloat">
+        <textarea id="memoryInput" rows="2" placeholder="输入你想记住的内容，例如：玩家名字：艾琳"></textarea>
+        <div class="actions">
+            <button class="close" id="memoryCloseBtn">取消</button>
+            <button class="add" id="memoryAddBtn">添加</button>
+        </div>
+    </div>
 </div>
+
+<!-- 设置模态框 -->
+<div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-panel">
+        <h3>⚙️ 角色与记忆设置</h3>
+        <label>角色设定（系统提示词）</label>
+        <textarea id="sysPromptInput" rows="5" placeholder="例如：你是一位中世纪的魔法师，说话语气古老而神秘……"></textarea>
+        <div class="char-counter" id="sysPromptCount">0 字符</div>
+        <label>关键记忆（每行一条）</label>
+        <textarea id="memoriesInput" rows="5" placeholder="玩家名字：艾琳&#10;当前任务：寻找龙之泪&#10;已获得：火焰剑"></textarea>
+        <div class="memory-hint">💡 点击输入框旁的「记忆」按钮可快速添加。</div>
+        <div class="actions">
+            <button class="cancel" id="closeSettingsBtn">取消</button>
+            <button class="save" id="saveSettingsBtn">保存</button>
+        </div>
+    </div>
+</div>
+
 <script>
 const API_KEY = 'sk-a5719b4bf58d48b481b4eed428c94800';
 
@@ -44,6 +89,19 @@ const modelSelect = document.getElementById('modelSelect');
 const newConvBtn = document.getElementById('newConvBtn');
 const deleteConvBtn = document.getElementById('deleteConvBtn');
 const tokenDisplay = document.getElementById('tokenDisplay');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsOverlay = document.getElementById('settingsOverlay');
+const sysPromptInput = document.getElementById('sysPromptInput');
+const memoriesInput = document.getElementById('memoriesInput');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+const sysPromptCount = document.getElementById('sysPromptCount');
+// 记忆浮层元素
+const memoryBtn = document.getElementById('memoryBtn');
+const memoryFloat = document.getElementById('memoryFloat');
+const memoryInput = document.getElementById('memoryInput');
+const memoryAddBtn = document.getElementById('memoryAddBtn');
+const memoryCloseBtn = document.getElementById('memoryCloseBtn');
 
 let conversations = {};
 let currentId = null;
@@ -54,10 +112,12 @@ const CONV_KEY = 'deepseek_conversations';
 const CURRENT_KEY = 'deepseek_current_conv';
 const MODEL_KEY = 'deepseek_selected_model';
 
+// ----- 辅助函数 -----
 function escapeHtml(unsafe) {
     return unsafe.replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 }
 
+// ----- Markdown 配置 -----
 marked.setOptions({
     highlight: function(code, lang) {
         if (lang && hljs.getLanguage(lang)) {
@@ -73,6 +133,7 @@ function renderMarkdown(text) {
     return marked.parse(text);
 }
 
+// ----- 数据持久化 -----
 function loadData() {
     const saved = localStorage.getItem(CONV_KEY);
     if (saved) {
@@ -92,6 +153,8 @@ function loadData() {
                         return msg;
                     });
                 }
+                if (!conv.systemPrompt) conv.systemPrompt = '';
+                if (!conv.memories) conv.memories = [];
             }
             conversations = parsed;
         } catch(e) { conversations = {}; }
@@ -120,9 +183,17 @@ function saveData() {
     localStorage.setItem(MODEL_KEY, currentModel);
 }
 
+// ----- 对话管理 -----
 function createNewConversation() {
     const id = 'conv_' + Date.now();
-    conversations[id] = { id, title: '新对话', messages: [], tokens: 0 };
+    conversations[id] = {
+        id,
+        title: '新对话',
+        messages: [],
+        tokens: 0,
+        systemPrompt: '',
+        memories: []
+    };
     currentId = id;
     saveData();
     refreshUI();
@@ -179,7 +250,37 @@ function setCurrentTokens(val) {
     saveData();
     updateTokenDisplay();
 }
+function getCurrentSystemPrompt() {
+    if (!currentId || !conversations[currentId]) return '';
+    return conversations[currentId].systemPrompt || '';
+}
+function setCurrentSystemPrompt(val) {
+    if (!currentId || !conversations[currentId]) return;
+    conversations[currentId].systemPrompt = val;
+    saveData();
+}
+function getCurrentMemories() {
+    if (!currentId || !conversations[currentId]) return [];
+    return conversations[currentId].memories || [];
+}
+function setCurrentMemories(arr) {
+    if (!currentId || !conversations[currentId]) return;
+    conversations[currentId].memories = arr;
+    saveData();
+}
+function addMemoryItem(item) {
+    if (!currentId || !conversations[currentId]) return false;
+    const mem = conversations[currentId].memories || [];
+    if (!mem.includes(item)) {
+        mem.push(item);
+        conversations[currentId].memories = mem;
+        saveData();
+        return true;
+    }
+    return false;
+}
 
+// ----- UI 更新 -----
 function updateTokenDisplay() {
     const tokens = getCurrentTokens();
     tokenDisplay.textContent = `${tokens} tokens`;
@@ -216,6 +317,7 @@ function refreshUI() {
     updateTokenDisplay();
 }
 
+// ----- DOM 消息渲染 -----
 function appendMessageToDOM(msg, index) {
     if (!msg.versions) {
         msg.versions = [msg.content];
@@ -271,6 +373,7 @@ function appendMessageToDOM(msg, index) {
     return wrapper;
 }
 
+// ----- 编辑与版本切换 -----
 function enterEditMode(index) {
     const msgs = getCurrentMessages();
     if (index < 0 || index >= msgs.length || msgs[index].role !== 'user') return;
@@ -339,10 +442,27 @@ async function regenerateResponse(index) {
         if (index < 0 || index >= msgs.length || msgs[index].role !== 'user') return;
         const truncated = msgs.slice(0, index + 1);
         setCurrentMessages(truncated);
+        const conv = conversations[currentId];
+        const sysPrompt = conv.systemPrompt || '';
+        const memories = conv.memories || [];
+        const memoriesText = memories.length > 0 ? '\n【关键记忆】\n' + memories.map(m => '- ' + m).join('\n') : '';
+        const reviewInstruction = '\n\n【系统指令】请每隔3-5轮对话主动回顾一次关键记忆，并自然融入回复中，确保剧情连贯。';
+        const fullSystemPrompt = sysPrompt + memoriesText + reviewInstruction;
+        let fullMessages = [];
+        if (fullSystemPrompt.trim()) {
+            fullMessages.push({ role: 'system', content: fullSystemPrompt });
+        }
+        const history = truncated.map(m => ({ role: m.role, content: m.content }));
+        fullMessages = fullMessages.concat(history);
+
         const response = await fetch('https://api.deepseek.com/chat/completions', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
-            body: JSON.stringify({ model: currentModel, messages: truncated.map(m => ({ role: m.role, content: m.content })), stream: false })
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`,
+                'X-DeepSeek-Enable-Context-Cache': 'true'
+            },
+            body: JSON.stringify({ model: currentModel, messages: fullMessages, stream: false })
         });
         if (!response.ok) {
             const errorText = await response.text();
@@ -361,12 +481,16 @@ async function regenerateResponse(index) {
     }
 }
 
-// ========== 修复 token 显示的核心函数 ==========
+// ----- 核心 API 调用（流式 + 缓存 + 记忆） -----
 async function callDeepSeek(messages, onChunk) {
     try {
         const response = await fetch('https://api.deepseek.com/chat/completions', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`,
+                'X-DeepSeek-Enable-Context-Cache': 'true'
+            },
             body: JSON.stringify({ model: currentModel, messages, stream: true })
         });
         if (!response.ok) {
@@ -392,14 +516,12 @@ async function callDeepSeek(messages, onChunk) {
                         fullContent += delta;
                         if (onChunk) onChunk(delta);
                     }
-                    // 捕获 usage（通常在最后一个 chunk 中）
                     if (json.usage) {
                         usage = json.usage;
                     }
                 } catch (e) { /* ignore */ }
             }
         }
-        // 更新 token 计数
         if (usage && usage.prompt_tokens !== undefined) {
             setCurrentTokens(usage.prompt_tokens);
         }
@@ -410,6 +532,7 @@ async function callDeepSeek(messages, onChunk) {
     }
 }
 
+// ----- 发送消息 -----
 async function handleSend() {
     const message = inputBox.value.trim();
     if (!message || !currentId) return;
@@ -417,12 +540,34 @@ async function handleSend() {
     inputBox.style.height = 'auto';
     sendBtn.disabled = true;
 
+    // 添加用户消息到历史
     addMessageToCurrent('user', message);
     const msgs = getCurrentMessages();
     const userIndex = msgs.length - 1;
     const userMsg = msgs[userIndex];
     appendMessageToDOM(userMsg, userIndex);
 
+    // 构造消息列表（系统提示词 + 记忆 + 滑动窗口）
+    const conv = conversations[currentId];
+    const sysPrompt = conv.systemPrompt || '';
+    const memories = conv.memories || [];
+    const memoriesText = memories.length > 0 ? '\n【关键记忆】\n' + memories.map(m => '- ' + m).join('\n') : '';
+    const reviewInstruction = '\n\n【系统指令】请每隔3-5轮对话主动回顾一次关键记忆，并自然融入回复中，确保剧情连贯。';
+    const fullSystemPrompt = sysPrompt + memoriesText + reviewInstruction;
+
+    let fullMessages = [];
+    if (fullSystemPrompt.trim()) {
+        fullMessages.push({ role: 'system', content: fullSystemPrompt });
+    }
+    const MAX_HISTORY = 20;
+    const allHistory = msgs.map(m => ({ role: m.role, content: m.content }));
+    let historySlice = allHistory;
+    if (allHistory.length > MAX_HISTORY) {
+        historySlice = allHistory.slice(-MAX_HISTORY);
+    }
+    fullMessages = fullMessages.concat(historySlice);
+
+    // 显示AI气泡（流式）
     const aiWrapper = document.createElement('div');
     aiWrapper.className = 'message-wrapper ai';
     const bubbleWrapper = document.createElement('div');
@@ -441,8 +586,7 @@ async function handleSend() {
         chatbox.scrollTop = chatbox.scrollHeight;
     };
 
-    const allMessages = msgs.map(m => ({ role: m.role, content: m.content }));
-    const reply = await callDeepSeek(allMessages, onChunk);
+    const reply = await callDeepSeek(fullMessages, onChunk);
 
     bubble.innerHTML = renderMarkdown(reply);
     addMessageToCurrent('assistant', reply);
@@ -450,6 +594,68 @@ async function handleSend() {
     chatbox.scrollTop = chatbox.scrollHeight;
 }
 
+// ----- 记忆浮层控制 -----
+function toggleMemoryFloat() {
+    if (memoryFloat.style.display === 'block') {
+        memoryFloat.style.display = 'none';
+        return;
+    }
+    memoryFloat.style.display = 'block';
+    memoryInput.value = '';
+    memoryInput.focus();
+}
+function closeMemoryFloat() {
+    memoryFloat.style.display = 'none';
+}
+function addMemoryFromFloat() {
+    const text = memoryInput.value.trim();
+    if (!text) { alert('请输入要记住的内容'); return; }
+    const added = addMemoryItem(text);
+    if (added) {
+        // 闪烁反馈
+        memoryBtn.classList.add('flash');
+        setTimeout(() => memoryBtn.classList.remove('flash'), 600);
+        // 清空并关闭浮层
+        memoryInput.value = '';
+        closeMemoryFloat();
+        // 可选：在聊天中插入一条系统提示（不保存历史），但这里保持简洁
+        // 我们可以在聊天框显示短暂提示
+        const tip = document.createElement('div');
+        tip.className = 'system-message';
+        tip.textContent = '✅ 已记住：' + text;
+        chatbox.appendChild(tip);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        setTimeout(() => tip.remove(), 3000);
+    } else {
+        alert('这条记忆已存在，无需重复添加。');
+    }
+}
+
+// ----- 设置面板 -----
+function openSettings() {
+    if (!currentId) return;
+    const sys = getCurrentSystemPrompt();
+    const mems = getCurrentMemories();
+    sysPromptInput.value = sys;
+    memoriesInput.value = mems.join('\n');
+    sysPromptCount.textContent = sys.length + ' 字符';
+    settingsOverlay.style.display = 'flex';
+}
+function closeSettings() {
+    settingsOverlay.style.display = 'none';
+}
+function saveSettings() {
+    if (!currentId) return;
+    const sys = sysPromptInput.value.trim();
+    const memsText = memoriesInput.value;
+    const mems = memsText.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    setCurrentSystemPrompt(sys);
+    setCurrentMemories(mems);
+    closeSettings();
+    alert('设置已保存！');
+}
+
+// ----- 事件绑定 -----
 inputBox.addEventListener('focus', function() {
     setTimeout(() => this.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
 });
@@ -475,6 +681,29 @@ modelSelect.addEventListener('change', (e) => {
 newConvBtn.addEventListener('click', createNewConversation);
 deleteConvBtn.addEventListener('click', deleteCurrentConversation);
 
+// 记忆按钮
+memoryBtn.addEventListener('click', toggleMemoryFloat);
+memoryCloseBtn.addEventListener('click', closeMemoryFloat);
+memoryAddBtn.addEventListener('click', addMemoryFromFloat);
+// 按ESC关闭浮层
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && memoryFloat.style.display === 'block') {
+        closeMemoryFloat();
+    }
+});
+
+// 设置按钮
+settingsBtn.addEventListener('click', openSettings);
+closeSettingsBtn.addEventListener('click', closeSettings);
+saveSettingsBtn.addEventListener('click', saveSettings);
+settingsOverlay.addEventListener('click', (e) => {
+    if (e.target === settingsOverlay) closeSettings();
+});
+sysPromptInput.addEventListener('input', () => {
+    sysPromptCount.textContent = sysPromptInput.value.length + ' 字符';
+});
+
+// ----- 初始化 -----
 loadData();
 refreshUI();
 </script>
