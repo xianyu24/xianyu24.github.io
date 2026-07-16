@@ -19,7 +19,7 @@
             display: flex;
             flex-direction: column;
         }
-        /* 顶栏 - 多会话控制 */
+        /* 毛玻璃顶部栏 */
         .header {
             display: flex;
             align-items: center;
@@ -27,10 +27,15 @@
             padding: 8px 0;
             flex-wrap: wrap;
             gap: 6px;
-            background: #f5f5f7;
+            background: rgba(245, 245, 247, 0.6);         /* 半透明背景 */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);          /* 毛玻璃核心 */
             position: sticky;
             top: 0;
             z-index: 10;
+            padding: 8px 4px;
+            border-radius: 16px;
+            margin-bottom: 4px;
         }
         .header-left {
             display: flex;
@@ -44,14 +49,14 @@
             min-width: 60px;
             padding: 6px 10px;
             border-radius: 20px;
-            border: 1px solid #ccc;
+            border: 1px solid rgba(0,0,0,0.1);
             font-size: 14px;
-            background: white;
+            background: rgba(255,255,255,0.8);
             outline: none;
             max-width: 180px;
         }
         .icon-btn {
-            background: #e9e9eb;
+            background: rgba(255,255,255,0.6);
             border: none;
             border-radius: 50%;
             width: 36px;
@@ -64,7 +69,7 @@
             flex-shrink: 0;
             transition: background 0.2s;
         }
-        .icon-btn:active { background: #d1d1d6; }
+        .icon-btn:active { background: rgba(0,0,0,0.1); }
         .icon-btn.danger:active { background: #ff3b30; color: white; }
         .header-right {
             display: flex;
@@ -74,7 +79,7 @@
         .token-info {
             font-size: 12px;
             color: #555;
-            background: #e9e9eb;
+            background: rgba(255,255,255,0.6);
             padding: 4px 10px;
             border-radius: 20px;
             white-space: nowrap;
@@ -89,10 +94,17 @@
             flex-direction: column;
             gap: 10px;
         }
-        /* 消息样式（无头像） */
+        /* 消息入场动画 */
         .message-wrapper {
             display: flex;
             max-width: 85%;
+            animation: slideIn 0.35s ease-out forwards;
+            opacity: 0; /* 初始透明，动画结束时可见 */
+            transform: translateY(12px);
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .message-wrapper.user { align-self: flex-end; }
         .message-wrapper.ai { align-self: flex-start; }
@@ -135,6 +147,7 @@
         }
         .bubble pre code { background: transparent; padding: 0; font-size: inherit; }
         .message-wrapper.user .bubble code { background: rgba(255,255,255,0.2); }
+
         /* 输入区 */
         #input-area {
             display: flex;
@@ -142,6 +155,7 @@
             align-items: flex-end;
             padding: 10px 0;
             background: #f5f5f7;
+            /* 增加一个过渡，但键盘抬升我们用 JS 控制滚动 */
         }
         #input-box {
             flex: 1;
@@ -175,7 +189,6 @@
             color: #666 !important;
             font-style: italic;
         }
-        /* 空状态 */
         .empty-state {
             text-align: center;
             color: #999;
@@ -188,9 +201,7 @@
 
 <div class="header">
     <div class="header-left">
-        <!-- 新建对话按钮 -->
         <button class="icon-btn" id="newConvBtn" title="新建对话">➕</button>
-        <!-- 切换对话下拉菜单 -->
         <select id="convSelector"></select>
     </div>
     <div class="header-right">
@@ -223,11 +234,9 @@
     const tokenDisplay = document.getElementById('tokenDisplay');
 
     // ---------- 数据结构 ----------
-    // conversations 存储所有对话: { id: { id, title, messages: [], tokens: 0 } }
     let conversations = {};
     let currentId = null;
 
-    // 存储键名
     const CONV_KEY = 'deepseek_conversations';
     const CURRENT_KEY = 'deepseek_current_conv';
 
@@ -241,7 +250,6 @@
         if (savedId && conversations[savedId]) {
             currentId = savedId;
         } else {
-            // 如果没有有效对话，自动创建一个
             const ids = Object.keys(conversations);
             if (ids.length > 0) currentId = ids[0];
             else createNewConversation();
@@ -266,8 +274,9 @@
         currentId = id;
         saveData();
         refreshUI();
-        // 聚焦输入框
         inputBox.focus();
+        // 键盘抬起时自动滚动
+        setTimeout(() => inputBox.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
     }
 
     function deleteCurrentConversation() {
@@ -279,7 +288,6 @@
         }
         if (!confirm(`确定要删除「${conversations[currentId].title}」吗？`)) return;
         delete conversations[currentId];
-        // 切换到第一个可用的对话
         const remaining = Object.keys(conversations);
         currentId = remaining[0];
         saveData();
@@ -294,26 +302,18 @@
         refreshUI();
     }
 
-    // 更新对话标题（根据第一条用户消息自动命名）
     function updateConversationTitle(id, firstMessage) {
         if (!conversations[id]) return;
         const title = firstMessage.length > 20 ? firstMessage.substring(0, 20) + '…' : firstMessage;
         conversations[id].title = title || '新对话';
         saveData();
-        // 只更新下拉菜单显示，不重新渲染整个界面
         updateSelector();
     }
 
-    // ---------- 获取当前对话的消息数组 ----------
+    // ---------- 当前对话操作 ----------
     function getCurrentMessages() {
         if (!currentId || !conversations[currentId]) return [];
         return conversations[currentId].messages || [];
-    }
-
-    function setCurrentMessages(messages) {
-        if (!currentId || !conversations[currentId]) return;
-        conversations[currentId].messages = messages;
-        saveData();
     }
 
     function addMessageToCurrent(role, content) {
@@ -340,7 +340,6 @@
         convSelector.innerHTML = '';
         const ids = Object.keys(conversations);
         if (ids.length === 0) {
-            // 如果没有对话，自动新建
             createNewConversation();
             return;
         }
@@ -371,16 +370,40 @@
         chatbox.scrollTop = chatbox.scrollHeight;
     }
 
-    function appendMessageToDOM(content, role, saveToHistory = true) {
+    // ---------- 打字机效果 ----------
+    function typeMessage(content, bubble) {
+        return new Promise((resolve) => {
+            let index = 0;
+            const total = content.length;
+            // 先清空内容，用纯文本逐步添加
+            bubble.textContent = '';
+            const interval = setInterval(() => {
+                if (index < total) {
+                    bubble.textContent += content.charAt(index);
+                    index++;
+                    chatbox.scrollTop = chatbox.scrollHeight;
+                } else {
+                    clearInterval(interval);
+                    // 打字完成后，渲染为 Markdown
+                    bubble.innerHTML = renderMarkdown(content);
+                    resolve();
+                }
+            }, 20); // 20ms 一个字，可自行调节速度
+        });
+    }
+
+    function appendMessageToDOM(content, role, saveToHistory = true, options = {}) {
+        const { typing = false } = options;
+
         if (saveToHistory) {
             addMessageToCurrent(role, content);
-            // 如果是用户的第一条消息，自动更新标题
             if (role === 'user' && conversations[currentId].title === '新对话') {
                 updateConversationTitle(currentId, content);
                 updateSelector();
             }
         }
-        // 移除空状态（如果有）
+
+        // 移除空状态
         const empty = chatbox.querySelector('.empty-state');
         if (empty) empty.remove();
 
@@ -388,10 +411,22 @@
         wrapper.className = `message-wrapper ${role}`;
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
-        bubble.innerHTML = renderMarkdown(content);
-        wrapper.appendChild(bubble);
-        chatbox.appendChild(wrapper);
-        chatbox.scrollTop = chatbox.scrollHeight;
+
+        if (typing && role === 'assistant') {
+            // 打字机模式：先插入空气泡，然后逐步填充
+            wrapper.appendChild(bubble);
+            chatbox.appendChild(wrapper);
+            chatbox.scrollTop = chatbox.scrollHeight;
+            // 开始打字
+            return typeMessage(content, bubble);
+        } else {
+            // 普通模式（历史加载或用户消息）：直接渲染
+            bubble.innerHTML = renderMarkdown(content);
+            wrapper.appendChild(bubble);
+            chatbox.appendChild(wrapper);
+            chatbox.scrollTop = chatbox.scrollHeight;
+            return Promise.resolve();
+        }
     }
 
     function updateTokenDisplay() {
@@ -433,7 +468,7 @@
                     'Authorization': `Bearer ${API_KEY}`
                 },
                 body: JSON.stringify({
-                    model: 'deepseek-v4-flash',  // 你也可以通过下拉菜单动态获取，这里直接固定
+                    model: 'deepseek-v4-flash',
                     messages: messages,
                     stream: false
                 })
@@ -447,8 +482,7 @@
             if (data.usage && data.usage.prompt_tokens !== undefined) {
                 setCurrentTokens(data.usage.prompt_tokens);
             }
-            // 保存AI回复到当前对话
-            addMessageToCurrent('assistant', reply);
+            // 注意：这里我们不再立即保存AI回复到历史，因为打字机完成后会保存
             return reply;
         } catch (error) {
             console.error('调用API时出错:', error);
@@ -465,8 +499,8 @@
         inputBox.style.height = 'auto';
         sendBtn.disabled = true;
 
-        // 显示用户消息（同时保存）
-        appendMessageToDOM(message, 'user', true);
+        // 显示用户消息（直接渲染，无打字效果）
+        await appendMessageToDOM(message, 'user', true, { typing: false });
 
         // 加载中
         const loadingWrapper = document.createElement('div');
@@ -478,15 +512,32 @@
         chatbox.appendChild(loadingWrapper);
         chatbox.scrollTop = chatbox.scrollHeight;
 
+        // 获取回复
         const reply = await callDeepSeek(message);
 
         // 移除加载提示
         chatbox.removeChild(loadingWrapper);
-        // 显示AI回复（已在 callDeepSeek 中保存，这里只渲染）
-        appendMessageToDOM(reply, 'assistant', false);
 
+        // 显示AI回复，带打字机效果（并保存到历史）
+        await appendMessageToDOM(reply, 'assistant', true, { typing: true });
+
+        // 启用发送按钮
         sendBtn.disabled = false;
     }
+
+    // ---------- 输入区抬升（键盘遮挡处理） ----------
+    inputBox.addEventListener('focus', function() {
+        // 延迟等待键盘弹出，然后滚动到输入框
+        setTimeout(() => {
+            this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+    });
+
+    // 当输入框内容变化时，自动调整高度
+    inputBox.addEventListener('input', () => {
+        inputBox.style.height = 'auto';
+        inputBox.style.height = Math.min(inputBox.scrollHeight, 150) + 'px';
+    });
 
     // ---------- 事件绑定 ----------
     sendBtn.addEventListener('click', handleSend);
@@ -498,12 +549,6 @@
         }
     });
 
-    inputBox.addEventListener('input', () => {
-        inputBox.style.height = 'auto';
-        inputBox.style.height = Math.min(inputBox.scrollHeight, 150) + 'px';
-    });
-
-    // 切换对话
     convSelector.addEventListener('change', (e) => {
         const newId = e.target.value;
         if (newId && newId !== currentId) {
@@ -511,12 +556,10 @@
         }
     });
 
-    // 新建对话
     newConvBtn.addEventListener('click', () => {
         createNewConversation();
     });
 
-    // 删除对话
     deleteConvBtn.addEventListener('click', deleteCurrentConversation);
 
     // ---------- 初始化 ----------
