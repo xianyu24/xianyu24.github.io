@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DeepSeek 智能助手</title>
-    <!-- Markdown & 代码高亮 -->
+    <title>DeepSeek 多会话助手</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -20,14 +19,14 @@
             display: flex;
             flex-direction: column;
         }
-        /* 顶栏 */
+        /* 顶栏 - 多会话控制 */
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 8px 0;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
             background: #f5f5f7;
             position: sticky;
             top: 0;
@@ -36,32 +35,49 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            flex: 1;
+            min-width: 0;
         }
         .header-left select {
-            padding: 6px 12px;
+            flex: 1;
+            min-width: 60px;
+            padding: 6px 10px;
             border-radius: 20px;
             border: 1px solid #ccc;
             font-size: 14px;
             background: white;
             outline: none;
+            max-width: 180px;
+        }
+        .icon-btn {
+            background: #e9e9eb;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        .icon-btn:active { background: #d1d1d6; }
+        .icon-btn.danger:active { background: #ff3b30; color: white; }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .token-info {
-            font-size: 14px;
+            font-size: 12px;
             color: #555;
             background: #e9e9eb;
-            padding: 4px 12px;
+            padding: 4px 10px;
             border-radius: 20px;
             white-space: nowrap;
-        }
-        .clear-btn {
-            background: #ff3b30;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 6px 16px;
-            font-size: 14px;
-            cursor: pointer;
         }
         /* 聊天区域 */
         #chatbox {
@@ -73,18 +89,13 @@
             flex-direction: column;
             gap: 10px;
         }
-        /* 消息容器（无头像） */
+        /* 消息样式（无头像） */
         .message-wrapper {
             display: flex;
             max-width: 85%;
         }
-        .message-wrapper.user {
-            align-self: flex-end;
-        }
-        .message-wrapper.ai {
-            align-self: flex-start;
-        }
-        /* 气泡 */
+        .message-wrapper.user { align-self: flex-end; }
+        .message-wrapper.ai { align-self: flex-start; }
         .bubble {
             padding: 10px 14px;
             border-radius: 20px;
@@ -105,7 +116,6 @@
             color: #1c1c1e;
             border-bottom-left-radius: 4px;
         }
-        /* Markdown 在气泡中的样式 */
         .bubble p { margin: 0 0 8px 0; }
         .bubble p:last-child { margin-bottom: 0; }
         .bubble code {
@@ -123,14 +133,8 @@
             margin: 8px 0;
             font-size: 13px;
         }
-        .bubble pre code {
-            background: transparent;
-            padding: 0;
-            font-size: inherit;
-        }
-        .message-wrapper.user .bubble code {
-            background: rgba(255,255,255,0.2);
-        }
+        .bubble pre code { background: transparent; padding: 0; font-size: inherit; }
+        .message-wrapper.user .bubble code { background: rgba(255,255,255,0.2); }
         /* 输入区 */
         #input-area {
             display: flex;
@@ -165,13 +169,18 @@
             flex-shrink: 0;
             font-weight: 500;
         }
-        #send-btn:disabled {
-            background: #aaa;
-        }
+        #send-btn:disabled { background: #aaa; }
         .loading .bubble {
             background: #e9e9eb !important;
             color: #666 !important;
             font-style: italic;
+        }
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -179,87 +188,224 @@
 
 <div class="header">
     <div class="header-left">
-        <select id="modelSelect">
-            <option value="deepseek-v4-pro">deepseek-v4-pro (推荐)</option>
-            <option value="deepseek-v4-flash" selected>deepseek-v4-flash (快速)</option>
-            <option value="deepseek-chat">deepseek-chat (旧，将弃用)</option>
-            <option value="deepseek-reasoner">deepseek-reasoner (旧R1)</option>
-        </select>
-        <span class="token-info" id="tokenDisplay">上下文: 0 tokens</span>
+        <!-- 新建对话按钮 -->
+        <button class="icon-btn" id="newConvBtn" title="新建对话">➕</button>
+        <!-- 切换对话下拉菜单 -->
+        <select id="convSelector"></select>
     </div>
-    <button class="clear-btn" id="clear-btn">清空记忆</button>
+    <div class="header-right">
+        <span class="token-info" id="tokenDisplay">0 tokens</span>
+        <button class="icon-btn danger" id="deleteConvBtn" title="删除当前对话">🗑️</button>
+    </div>
 </div>
 
-<div id="chatbox"></div>
+<div id="chatbox">
+    <div class="empty-state">点击「➕」开始新对话</div>
+</div>
 
 <div id="input-area">
-    <textarea id="input-box" rows="1" placeholder="输入你的问题… (Enter换行，点击发送)"></textarea>
+    <textarea id="input-box" rows="1" placeholder="输入你的问题… (Enter换行)"></textarea>
     <button id="send-btn">发送</button>
 </div>
 
 <script>
     // ---------- 配置 ----------
-    const API_KEY = '你的API密钥';   // 请替换为真实密钥
+    const API_KEY = 'sk-a5719b4bf58d48b481b4eed428c94800';   // 请替换为真实密钥
     // -------------------------
 
+    // DOM 引用
     const chatbox = document.getElementById('chatbox');
     const inputBox = document.getElementById('input-box');
     const sendBtn = document.getElementById('send-btn');
-    const clearBtn = document.getElementById('clear-btn');
-    const modelSelect = document.getElementById('modelSelect');
+    const convSelector = document.getElementById('convSelector');
+    const newConvBtn = document.getElementById('newConvBtn');
+    const deleteConvBtn = document.getElementById('deleteConvBtn');
     const tokenDisplay = document.getElementById('tokenDisplay');
 
-    // ---------- 本地存储键 ----------
-    const STORAGE_KEY = 'deepseek_chat_history';
-    const MODEL_KEY = 'deepseek_selected_model';
-    const TOKEN_KEY = 'deepseek_total_tokens';
+    // ---------- 数据结构 ----------
+    // conversations 存储所有对话: { id: { id, title, messages: [], tokens: 0 } }
+    let conversations = {};
+    let currentId = null;
 
-    // ---------- 全局变量 ----------
-    let conversationHistory = [];
-    let currentModel = 'deepseek-v4-flash';  // 默认使用 flash
-    let promptTokens = 0;
+    // 存储键名
+    const CONV_KEY = 'deepseek_conversations';
+    const CURRENT_KEY = 'deepseek_current_conv';
 
-    // ---------- 加载存储 ----------
-    function loadHistory() {
-        const saved = localStorage.getItem(STORAGE_KEY);
+    // ---------- 数据持久化 ----------
+    function loadData() {
+        const saved = localStorage.getItem(CONV_KEY);
         if (saved) {
-            try { conversationHistory = JSON.parse(saved); } catch(e) { conversationHistory = []; }
+            try { conversations = JSON.parse(saved); } catch(e) { conversations = {}; }
         }
-    }
-    function saveHistory() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(conversationHistory));
-    }
-
-    function loadModel() {
-        const saved = localStorage.getItem(MODEL_KEY);
-        if (saved && modelSelect.querySelector(`option[value="${saved}"]`)) {
-            currentModel = saved;
-            modelSelect.value = saved;
+        const savedId = localStorage.getItem(CURRENT_KEY);
+        if (savedId && conversations[savedId]) {
+            currentId = savedId;
         } else {
-            // 如果没保存或无效，使用默认 flash
-            currentModel = 'deepseek-v4-flash';
-            modelSelect.value = 'deepseek-v4-flash';
+            // 如果没有有效对话，自动创建一个
+            const ids = Object.keys(conversations);
+            if (ids.length > 0) currentId = ids[0];
+            else createNewConversation();
         }
-    }
-    function saveModel() {
-        localStorage.setItem(MODEL_KEY, currentModel);
     }
 
-    function loadTokens() {
-        const saved = localStorage.getItem(TOKEN_KEY);
-        if (saved) {
-            promptTokens = parseInt(saved, 10) || 0;
-            updateTokenDisplay();
+    function saveData() {
+        localStorage.setItem(CONV_KEY, JSON.stringify(conversations));
+        if (currentId) localStorage.setItem(CURRENT_KEY, currentId);
+        else localStorage.removeItem(CURRENT_KEY);
+    }
+
+    // ---------- 对话管理 ----------
+    function createNewConversation() {
+        const id = 'conv_' + Date.now();
+        conversations[id] = {
+            id: id,
+            title: '新对话',
+            messages: [],
+            tokens: 0
+        };
+        currentId = id;
+        saveData();
+        refreshUI();
+        // 聚焦输入框
+        inputBox.focus();
+    }
+
+    function deleteCurrentConversation() {
+        if (!currentId) return;
+        const ids = Object.keys(conversations);
+        if (ids.length <= 1) {
+            alert('至少保留一个对话，无法删除最后一个。');
+            return;
         }
+        if (!confirm(`确定要删除「${conversations[currentId].title}」吗？`)) return;
+        delete conversations[currentId];
+        // 切换到第一个可用的对话
+        const remaining = Object.keys(conversations);
+        currentId = remaining[0];
+        saveData();
+        refreshUI();
     }
-    function saveTokens() {
-        localStorage.setItem(TOKEN_KEY, String(promptTokens));
+
+    function switchConversation(id) {
+        if (id === currentId) return;
+        if (!conversations[id]) return;
+        currentId = id;
+        saveData();
+        refreshUI();
     }
+
+    // 更新对话标题（根据第一条用户消息自动命名）
+    function updateConversationTitle(id, firstMessage) {
+        if (!conversations[id]) return;
+        const title = firstMessage.length > 20 ? firstMessage.substring(0, 20) + '…' : firstMessage;
+        conversations[id].title = title || '新对话';
+        saveData();
+        // 只更新下拉菜单显示，不重新渲染整个界面
+        updateSelector();
+    }
+
+    // ---------- 获取当前对话的消息数组 ----------
+    function getCurrentMessages() {
+        if (!currentId || !conversations[currentId]) return [];
+        return conversations[currentId].messages || [];
+    }
+
+    function setCurrentMessages(messages) {
+        if (!currentId || !conversations[currentId]) return;
+        conversations[currentId].messages = messages;
+        saveData();
+    }
+
+    function addMessageToCurrent(role, content) {
+        if (!currentId || !conversations[currentId]) return;
+        conversations[currentId].messages.push({ role, content });
+        saveData();
+    }
+
+    function getCurrentTokens() {
+        if (!currentId || !conversations[currentId]) return 0;
+        return conversations[currentId].tokens || 0;
+    }
+
+    function setCurrentTokens(val) {
+        if (!currentId || !conversations[currentId]) return;
+        conversations[currentId].tokens = val;
+        saveData();
+        updateTokenDisplay();
+    }
+
+    // ---------- UI 渲染 ----------
+    function updateSelector() {
+        const currentVal = currentId;
+        convSelector.innerHTML = '';
+        const ids = Object.keys(conversations);
+        if (ids.length === 0) {
+            // 如果没有对话，自动新建
+            createNewConversation();
+            return;
+        }
+        ids.forEach(id => {
+            const opt = document.createElement('option');
+            opt.value = id;
+            opt.textContent = conversations[id].title || '未命名';
+            if (id === currentVal) opt.selected = true;
+            convSelector.appendChild(opt);
+        });
+    }
+
+    function renderMessages() {
+        chatbox.innerHTML = '';
+        const messages = getCurrentMessages();
+        if (messages.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'empty-state';
+            empty.textContent = '开始你的第一次对话吧 ✨';
+            chatbox.appendChild(empty);
+            return;
+        }
+        messages.forEach(msg => {
+            if (msg.role === 'user' || msg.role === 'assistant') {
+                appendMessageToDOM(msg.content, msg.role, false);
+            }
+        });
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    function appendMessageToDOM(content, role, saveToHistory = true) {
+        if (saveToHistory) {
+            addMessageToCurrent(role, content);
+            // 如果是用户的第一条消息，自动更新标题
+            if (role === 'user' && conversations[currentId].title === '新对话') {
+                updateConversationTitle(currentId, content);
+                updateSelector();
+            }
+        }
+        // 移除空状态（如果有）
+        const empty = chatbox.querySelector('.empty-state');
+        if (empty) empty.remove();
+
+        const wrapper = document.createElement('div');
+        wrapper.className = `message-wrapper ${role}`;
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.innerHTML = renderMarkdown(content);
+        wrapper.appendChild(bubble);
+        chatbox.appendChild(wrapper);
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
     function updateTokenDisplay() {
-        tokenDisplay.textContent = `上下文: ${promptTokens} tokens`;
+        const tokens = getCurrentTokens();
+        tokenDisplay.textContent = `${tokens} tokens`;
     }
 
-    // ---------- 渲染 Markdown ----------
+    function refreshUI() {
+        updateSelector();
+        renderMessages();
+        updateTokenDisplay();
+    }
+
+    // ---------- Markdown 渲染 ----------
     marked.setOptions({
         highlight: function(code, lang) {
             if (lang && hljs.getLanguage(lang)) {
@@ -276,38 +422,9 @@
         return marked.parse(text);
     }
 
-    // ---------- 渲染所有消息 ----------
-    function renderMessages() {
-        chatbox.innerHTML = '';
-        conversationHistory.forEach(msg => {
-            if (msg.role === 'user' || msg.role === 'assistant') {
-                appendMessageToDOM(msg.content, msg.role, false);
-            }
-        });
-        chatbox.scrollTop = chatbox.scrollHeight;
-    }
-
-    // ---------- 添加消息到DOM（无头像） ----------
-    function appendMessageToDOM(content, role, saveToHistory = true) {
-        if (saveToHistory) {
-            conversationHistory.push({ role, content });
-            saveHistory();
-        }
-
-        const wrapper = document.createElement('div');
-        wrapper.className = `message-wrapper ${role}`;
-
-        const bubble = document.createElement('div');
-        bubble.className = 'bubble';
-        bubble.innerHTML = renderMarkdown(content);
-
-        wrapper.appendChild(bubble);
-        chatbox.appendChild(wrapper);
-        chatbox.scrollTop = chatbox.scrollHeight;
-    }
-
-    // ---------- 调用API ----------
+    // ---------- API 调用 ----------
     async function callDeepSeek(userMessage) {
+        const messages = getCurrentMessages();
         try {
             const response = await fetch('https://api.deepseek.com/chat/completions', {
                 method: 'POST',
@@ -316,26 +433,22 @@
                     'Authorization': `Bearer ${API_KEY}`
                 },
                 body: JSON.stringify({
-                    model: currentModel,
-                    messages: conversationHistory,
+                    model: 'deepseek-v4-flash',  // 你也可以通过下拉菜单动态获取，这里直接固定
+                    messages: messages,
                     stream: false
                 })
             });
-
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`API 请求失败 (${response.status}): ${errorText}`);
             }
-
             const data = await response.json();
             const reply = data.choices[0].message.content;
             if (data.usage && data.usage.prompt_tokens !== undefined) {
-                promptTokens = data.usage.prompt_tokens;
-                updateTokenDisplay();
-                saveTokens();
+                setCurrentTokens(data.usage.prompt_tokens);
             }
-            conversationHistory.push({ role: 'assistant', content: reply });
-            saveHistory();
+            // 保存AI回复到当前对话
+            addMessageToCurrent('assistant', reply);
             return reply;
         } catch (error) {
             console.error('调用API时出错:', error);
@@ -346,14 +459,14 @@
     // ---------- 发送逻辑 ----------
     async function handleSend() {
         const message = inputBox.value.trim();
-        if (!message) return;
+        if (!message || !currentId) return;
 
         inputBox.value = '';
         inputBox.style.height = 'auto';
-
-        appendMessageToDOM(message, 'user', true);
-
         sendBtn.disabled = true;
+
+        // 显示用户消息（同时保存）
+        appendMessageToDOM(message, 'user', true);
 
         // 加载中
         const loadingWrapper = document.createElement('div');
@@ -367,22 +480,12 @@
 
         const reply = await callDeepSeek(message);
 
+        // 移除加载提示
         chatbox.removeChild(loadingWrapper);
-        appendMessageToDOM(reply, 'assistant', true);
+        // 显示AI回复（已在 callDeepSeek 中保存，这里只渲染）
+        appendMessageToDOM(reply, 'assistant', false);
 
         sendBtn.disabled = false;
-    }
-
-    // ---------- 清空记忆 ----------
-    function clearHistory() {
-        if (confirm('确定要清空所有历史记录吗？')) {
-            conversationHistory = [];
-            localStorage.removeItem(STORAGE_KEY);
-            promptTokens = 0;
-            saveTokens();
-            updateTokenDisplay();
-            chatbox.innerHTML = '';
-        }
     }
 
     // ---------- 事件绑定 ----------
@@ -400,18 +503,25 @@
         inputBox.style.height = Math.min(inputBox.scrollHeight, 150) + 'px';
     });
 
-    clearBtn.addEventListener('click', clearHistory);
-
-    modelSelect.addEventListener('change', (e) => {
-        currentModel = e.target.value;
-        saveModel();
+    // 切换对话
+    convSelector.addEventListener('change', (e) => {
+        const newId = e.target.value;
+        if (newId && newId !== currentId) {
+            switchConversation(newId);
+        }
     });
 
+    // 新建对话
+    newConvBtn.addEventListener('click', () => {
+        createNewConversation();
+    });
+
+    // 删除对话
+    deleteConvBtn.addEventListener('click', deleteCurrentConversation);
+
     // ---------- 初始化 ----------
-    loadHistory();
-    loadModel();
-    loadTokens();
-    renderMessages();
+    loadData();
+    refreshUI();
 </script>
 </body>
 </html>
